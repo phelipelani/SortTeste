@@ -22,6 +22,11 @@
 
 
 const balanceTeams = (jogadores, avaliacoes) => {
+    // Verifica se o número de jogadores e avaliações são consistentes
+    if (jogadores.length !== avaliacoes.length) {
+        throw new Error("O número de jogadores deve corresponder ao número de avaliações.");
+    }
+
     const jogadoresOrdenados = jogadores
       .map((jogador, index) => ({
         nome: jogador,
@@ -48,16 +53,18 @@ const balanceTeams = (jogadores, avaliacoes) => {
     for (let i = 0; i < jogadoresOrdenados.length; i++) {
       const indiceTimeMinimo = obterIndiceTimeMinimo();
       if (timesBalanceados[indiceTimeMinimo].length < 5) {
-        timesBalanceados[indiceTimeMinimo].push(jogadoresOrdenados[i]);
-        avaliacoesTimes[indiceTimeMinimo] += jogadoresOrdenados[i].avaliacao;
+        const jogador = jogadoresOrdenados[i];
+        timesBalanceados[indiceTimeMinimo].push(jogador);
+        avaliacoesTimes[indiceTimeMinimo] += jogador.avaliacao;
       }
     }
 
     // Garantir que todos os times tenham exatamente 5 jogadores e a diferença de pontuação seja no máximo 15
     const jogadoresPorTime = 5;
     const diferencaMaxima = 15; // Diferença máxima de pontos entre os times
-    while (true) {
-      let redistribuido = false;
+
+    // Ajustar times para garantir que todos tenham 5 jogadores
+    while (timesBalanceados.some(time => time.length < jogadoresPorTime)) {
       for (let i = 0; i < timesBalanceados.length; i++) {
         if (timesBalanceados[i].length < jogadoresPorTime) {
           for (let j = 0; j < timesBalanceados.length; j++) {
@@ -67,17 +74,16 @@ const balanceTeams = (jogadores, avaliacoes) => {
               );
               if (diferencaAtual <= diferencaMaxima) {
                 // Mover um jogador do time com mais de 5 para o time com menos de 5
-                timesBalanceados[i].push(timesBalanceados[j].pop());
-                avaliacoesTimes[i] += timesBalanceados[i][timesBalanceados[i].length - 1].avaliacao;
-                avaliacoesTimes[j] -= timesBalanceados[j][timesBalanceados[j].length - 1].avaliacao;
-                redistribuido = true;
+                const jogadorMovido = timesBalanceados[j].pop();
+                timesBalanceados[i].push(jogadorMovido);
+                avaliacoesTimes[i] += jogadorMovido.avaliacao;
+                avaliacoesTimes[j] -= jogadorMovido.avaliacao;
                 break;
               }
             }
           }
         }
       }
-      if (!redistribuido) break; // Se não houve redistribuição, terminar o loop
     }
 
     return timesBalanceados;
