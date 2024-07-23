@@ -21,7 +21,6 @@
 //   export default balanceTeams;
 
 
-
 const balanceTeams = (players, ratings) => {
     const sortedPlayers = players
       .map((player, index) => ({
@@ -38,7 +37,7 @@ const balanceTeams = (players, ratings) => {
       let minIndex = 0;
       for (let i = 1; i < teamRatings.length; i++) {
         if (teamRatings[i] < teamRatings[minIndex] ||
-            (teamRatings[i] === teamRatings[minIndex] && Math.random() < 5)) {
+            (teamRatings[i] === teamRatings[minIndex] && Math.random() < 0.5)) {
           minIndex = i;
         }
       }
@@ -56,15 +55,21 @@ const balanceTeams = (players, ratings) => {
   
     // If any team has less than 5 players, redistribute players from larger teams
     const playersPerTeam = 5;
+    const maxDifference = 15; // Allow a maximum difference of 15 points between teams
     for (let i = 0; i < balancedTeams.length; i++) {
       while (balancedTeams[i].length < playersPerTeam) {
         for (let j = 0; j < balancedTeams.length; j++) {
           if (balancedTeams[j].length > playersPerTeam) {
-            // Move one player from the team with more than 5 to the team with less than 5
-            balancedTeams[i].push(balancedTeams[j].pop());
-            teamRatings[i] += balancedTeams[i][balancedTeams[i].length - 1].rating;
-            teamRatings[j] -= balancedTeams[j][balancedTeams[j].length - 1].rating;
-            break;
+            const currentDifference = Math.max(
+              ...teamRatings.map(rating => Math.abs(rating - teamRatings[i]))
+            );
+            if (currentDifference <= maxDifference) {
+              // Move one player from the team with more than 5 to the team with less than 5
+              balancedTeams[i].push(balancedTeams[j].pop());
+              teamRatings[i] += balancedTeams[i][balancedTeams[i].length - 1].rating;
+              teamRatings[j] -= balancedTeams[j][balancedTeams[j].length - 1].rating;
+              break;
+            }
           }
         }
       }

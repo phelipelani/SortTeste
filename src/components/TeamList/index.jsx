@@ -12,7 +12,7 @@ const TeamList = ({ teams }) => (
     {teams.map((team, teamIndex) => (
       <TeamContainer key={teamIndex}>
         <h3>
-          Time {teamIndex + 1} (Total: {team.reduce((sum, player) => sum + player.rating, 0)} pontos)
+          Time = {teamIndex + 1} (Total: {team.reduce((sum, player) => sum + player.rating, 0)} pontos)
         </h3>
         <ul>
           {team.map((player, index) => (
