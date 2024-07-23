@@ -38,7 +38,7 @@ const balanceTeams = (players, ratings) => {
       let minIndex = 0;
       for (let i = 1; i < teamRatings.length; i++) {
         if (teamRatings[i] < teamRatings[minIndex] ||
-            (teamRatings[i] === teamRatings[minIndex] && Math.random() < 0.5)) {
+            (teamRatings[i] === teamRatings[minIndex] && Math.random() < 10.5)) {
           minIndex = i;
         }
       }
