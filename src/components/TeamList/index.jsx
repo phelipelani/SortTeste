@@ -8,7 +8,7 @@ const TeamContainer = styled.div`
 
 const TeamList = ({ teams }) => (
   <div>
-    <h2>Times das Lendas</h2>
+    <h2>Times Balanceados</h2>
     {teams.map((team, teamIndex) => (
       <TeamContainer key={teamIndex}>
         <h3>
