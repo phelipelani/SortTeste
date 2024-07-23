@@ -22,7 +22,7 @@
 
 
 
-  const balanceTeams = (players, ratings) => {
+const balanceTeams = (players, ratings) => {
     const sortedPlayers = players
       .map((player, index) => ({
         name: player,
@@ -45,23 +45,32 @@
       return minIndex;
     };
   
-    sortedPlayers.forEach((player, index) => {
+    // Fill each team with 5 players first, prioritizing balance later
+    for (let i = 0; i < sortedPlayers.length; i++) {
       const minTeamIndex = getMinTeamIndex();
-      balancedTeams[minTeamIndex].push(player);
-      teamRatings[minTeamIndex] += player.rating;
-    });
+      if (balancedTeams[minTeamIndex].length < 5) {
+        balancedTeams[minTeamIndex].push(sortedPlayers[i]);
+        teamRatings[minTeamIndex] += sortedPlayers[i].rating;
+      }
+    }
   
-    // Ensure each team has exactly 5 players (fix)
+    // If any team has less than 5 players, redistribute players from larger teams
     const playersPerTeam = 5;
     for (let i = 0; i < balancedTeams.length; i++) {
-      while (balancedTeams[i].length > playersPerTeam) {
-        // Remove the last player directly (avoid excessPlayers array)
-        balancedTeams[i].pop();
-        teamRatings[i] -= balancedTeams[i][balancedTeams[i].length - 1].rating;
+      while (balancedTeams[i].length < playersPerTeam) {
+        for (let j = 0; j < balancedTeams.length; j++) {
+          if (balancedTeams[j].length > playersPerTeam) {
+            // Move one player from the team with more than 5 to the team with less than 5
+            balancedTeams[i].push(balancedTeams[j].pop());
+            teamRatings[i] += balancedTeams[i][balancedTeams[i].length - 1].rating;
+            teamRatings[j] -= balancedTeams[j][balancedTeams[j].length - 1].rating;
+            break;
+          }
+        }
       }
     }
   
     return balancedTeams;
   };
   
-  export default balanceTeams
+  export default balanceTeams;
