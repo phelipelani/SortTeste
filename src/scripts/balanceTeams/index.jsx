@@ -21,61 +21,66 @@
 //   export default balanceTeams;
 
 
-const balanceTeams = (players, ratings) => {
-    const sortedPlayers = players
-      .map((player, index) => ({
-        name: player,
-        rating: ratings[index] || 0,
+const balanceTeams = (jogadores, avaliacoes) => {
+    const jogadoresOrdenados = jogadores
+      .map((jogador, index) => ({
+        nome: jogador,
+        avaliacao: avaliacoes[index] || 0,
       }))
-      .sort((a, b) => b.rating - a.rating);
-  
-    const balancedTeams = [[], [], [], []];
-    const teamRatings = [0, 0, 0, 0];
-  
-    // Function to get the index of the team with the lowest total rating
-    const getMinTeamIndex = () => {
-      let minIndex = 0;
-      for (let i = 1; i < teamRatings.length; i++) {
-        if (teamRatings[i] < teamRatings[minIndex] ||
-            (teamRatings[i] === teamRatings[minIndex] && Math.random() < 0.5)) {
-          minIndex = i;
+      .sort((a, b) => b.avaliacao - a.avaliacao);
+
+    const timesBalanceados = [[], [], [], []];
+    const avaliacoesTimes = [0, 0, 0, 0];
+
+    // Função para obter o índice do time com a menor pontuação total
+    const obterIndiceTimeMinimo = () => {
+      let indiceMinimo = 0;
+      for (let i = 1; i < avaliacoesTimes.length; i++) {
+        if (avaliacoesTimes[i] < avaliacoesTimes[indiceMinimo] ||
+            (avaliacoesTimes[i] === avaliacoesTimes[indiceMinimo] && Math.random() < 0.5)) {
+          indiceMinimo = i;
         }
       }
-      return minIndex;
+      return indiceMinimo;
     };
-  
-    // Fill each team with 5 players first, prioritizing balance later
-    for (let i = 0; i < sortedPlayers.length; i++) {
-      const minTeamIndex = getMinTeamIndex();
-      if (balancedTeams[minTeamIndex].length < 5) {
-        balancedTeams[minTeamIndex].push(sortedPlayers[i]);
-        teamRatings[minTeamIndex] += sortedPlayers[i].rating;
+
+    // Preencher cada time com 5 jogadores inicialmente
+    for (let i = 0; i < jogadoresOrdenados.length; i++) {
+      const indiceTimeMinimo = obterIndiceTimeMinimo();
+      if (timesBalanceados[indiceTimeMinimo].length < 5) {
+        timesBalanceados[indiceTimeMinimo].push(jogadoresOrdenados[i]);
+        avaliacoesTimes[indiceTimeMinimo] += jogadoresOrdenados[i].avaliacao;
       }
     }
-  
-    // If any team has less than 5 players, redistribute players from larger teams
-    const playersPerTeam = 5;
-    const maxDifference = 15; // Allow a maximum difference of 15 points between teams
-    for (let i = 0; i < balancedTeams.length; i++) {
-      while (balancedTeams[i].length < playersPerTeam) {
-        for (let j = 0; j < balancedTeams.length; j++) {
-          if (balancedTeams[j].length > playersPerTeam) {
-            const currentDifference = Math.max(
-              ...teamRatings.map(rating => Math.abs(rating - teamRatings[i]))
-            );
-            if (currentDifference <= maxDifference) {
-              // Move one player from the team with more than 5 to the team with less than 5
-              balancedTeams[i].push(balancedTeams[j].pop());
-              teamRatings[i] += balancedTeams[i][balancedTeams[i].length - 1].rating;
-              teamRatings[j] -= balancedTeams[j][balancedTeams[j].length - 1].rating;
-              break;
+
+    // Garantir que todos os times tenham exatamente 5 jogadores e a diferença de pontuação seja no máximo 15
+    const jogadoresPorTime = 5;
+    const diferencaMaxima = 15; // Diferença máxima de pontos entre os times
+    while (true) {
+      let redistribuido = false;
+      for (let i = 0; i < timesBalanceados.length; i++) {
+        if (timesBalanceados[i].length < jogadoresPorTime) {
+          for (let j = 0; j < timesBalanceados.length; j++) {
+            if (timesBalanceados[j].length > jogadoresPorTime) {
+              const diferencaAtual = Math.max(
+                ...avaliacoesTimes.map(avaliacao => Math.abs(avaliacao - avaliacoesTimes[i]))
+              );
+              if (diferencaAtual <= diferencaMaxima) {
+                // Mover um jogador do time com mais de 5 para o time com menos de 5
+                timesBalanceados[i].push(timesBalanceados[j].pop());
+                avaliacoesTimes[i] += timesBalanceados[i][timesBalanceados[i].length - 1].avaliacao;
+                avaliacoesTimes[j] -= timesBalanceados[j][timesBalanceados[j].length - 1].avaliacao;
+                redistribuido = true;
+                break;
+              }
             }
           }
         }
       }
+      if (!redistribuido) break; // Se não houve redistribuição, terminar o loop
     }
-  
-    return balancedTeams;
-  };
-  
-  export default balanceTeams;
+
+    return timesBalanceados;
+};
+
+export default balanceTeams;
