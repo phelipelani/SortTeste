@@ -22,68 +22,59 @@
 
 
 const balanceTeams = (jogadores, avaliacoes) => {
-    // Verifica se o número de jogadores e avaliações são consistentes
     if (jogadores.length !== avaliacoes.length) {
         throw new Error("O número de jogadores deve corresponder ao número de avaliações.");
     }
 
-    const jogadoresOrdenados = jogadores
-      .map((jogador, index) => ({
+    // Cria uma lista de jogadores com suas avaliações
+    const jogadoresComAvaliacoes = jogadores.map((jogador, index) => ({
         nome: jogador,
         avaliacao: avaliacoes[index] || 0,
-      }))
-      .sort((a, b) => b.avaliacao - a.avaliacao);
+    }));
 
+    // Ordena os jogadores pela avaliação (decrescente)
+    const jogadoresOrdenados = jogadoresComAvaliacoes.sort((a, b) => b.avaliacao - a.avaliacao);
+
+    // Inicializa os times
     const timesBalanceados = [[], [], [], []];
     const avaliacoesTimes = [0, 0, 0, 0];
 
-    // Função para obter o índice do time com a menor pontuação total
-    const obterIndiceTimeMinimo = () => {
-      let indiceMinimo = 0;
-      for (let i = 1; i < avaliacoesTimes.length; i++) {
-        if (avaliacoesTimes[i] < avaliacoesTimes[indiceMinimo] ||
-            (avaliacoesTimes[i] === avaliacoesTimes[indiceMinimo] && Math.random() < 0.5)) {
-          indiceMinimo = i;
-        }
-      }
-      return indiceMinimo;
-    };
-
-    // Preencher cada time com 5 jogadores inicialmente
-    for (let i = 0; i < jogadoresOrdenados.length; i++) {
-      const indiceTimeMinimo = obterIndiceTimeMinimo();
-      if (timesBalanceados[indiceTimeMinimo].length < 5) {
-        const jogador = jogadoresOrdenados[i];
-        timesBalanceados[indiceTimeMinimo].push(jogador);
-        avaliacoesTimes[indiceTimeMinimo] += jogador.avaliacao;
-      }
+    // Distribui os 4 melhores jogadores como cabeça de chave
+    for (let i = 0; i < 4; i++) {
+        timesBalanceados[i].push(jogadoresOrdenados[i]);
+        avaliacoesTimes[i] += jogadoresOrdenados[i].avaliacao;
     }
 
-    // Garantir que todos os times tenham exatamente 5 jogadores e a diferença de pontuação seja no máximo 15
-    const jogadoresPorTime = 5;
-    const diferencaMaxima = 15; // Diferença máxima de pontos entre os times
-
-    // Ajustar times para garantir que todos tenham 5 jogadores
-    while (timesBalanceados.some(time => time.length < jogadoresPorTime)) {
-      for (let i = 0; i < timesBalanceados.length; i++) {
-        if (timesBalanceados[i].length < jogadoresPorTime) {
-          for (let j = 0; j < timesBalanceados.length; j++) {
-            if (timesBalanceados[j].length > jogadoresPorTime) {
-              const diferencaAtual = Math.max(
-                ...avaliacoesTimes.map(avaliacao => Math.abs(avaliacao - avaliacoesTimes[i]))
-              );
-              if (diferencaAtual <= diferencaMaxima) {
-                // Mover um jogador do time com mais de 5 para o time com menos de 5
-                const jogadorMovido = timesBalanceados[j].pop();
-                timesBalanceados[i].push(jogadorMovido);
-                avaliacoesTimes[i] += jogadorMovido.avaliacao;
-                avaliacoesTimes[j] -= jogadorMovido.avaliacao;
-                break;
-              }
+    // Distribui o restante dos jogadores de forma equilibrada
+    for (let i = 4; i < jogadoresOrdenados.length; i++) {
+        // Encontra o time com a menor soma de avaliações
+        let indiceTimeMinimo = 0;
+        for (let j = 1; j < avaliacoesTimes.length; j++) {
+            if (avaliacoesTimes[j] < avaliacoesTimes[indiceTimeMinimo]) {
+                indiceTimeMinimo = j;
             }
-          }
         }
-      }
+        // Adiciona o jogador ao time com a menor soma de avaliações
+        timesBalanceados[indiceTimeMinimo].push(jogadoresOrdenados[i]);
+        avaliacoesTimes[indiceTimeMinimo] += jogadoresOrdenados[i].avaliacao;
+    }
+
+    // Garantir que todos os times tenham exatamente 5 jogadores
+    const jogadoresPorTime = 5;
+    while (timesBalanceados.some(time => time.length < jogadoresPorTime)) {
+        for (let i = 0; i < timesBalanceados.length; i++) {
+            if (timesBalanceados[i].length < jogadoresPorTime) {
+                for (let j = 0; j < timesBalanceados.length; j++) {
+                    if (timesBalanceados[j].length > jogadoresPorTime) {
+                        const jogadorMovido = timesBalanceados[j].pop();
+                        timesBalanceados[i].push(jogadorMovido);
+                        avaliacoesTimes[i] += jogadorMovido.avaliacao;
+                        avaliacoesTimes[j] -= jogadorMovido.avaliacao;
+                        break;
+                    }
+                }
+            }
+        }
     }
 
     return timesBalanceados;
